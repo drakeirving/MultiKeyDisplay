@@ -46,6 +46,7 @@ $(function() {
         fResult = true;
       }
     }
+    return fResult;
   }
 
   function AppendOverlayAtLocation(keyCode, unitX, unitY, top, left, width, height) {
@@ -81,11 +82,7 @@ $(function() {
     return $("#overlay" + keyCode);
   }
 
-  $(window).keydown(function(event) {
-    HandleKeyDown(event)
-  });
-
-  $("#divKeyboard").keydown(function(event) {
+  $("body").keydown(function(event) {
     HandleKeyDown(event)
   });
 
@@ -94,21 +91,23 @@ $(function() {
       HideHintUserToType();
       fUserHasTyped = true;
     }
-    if (ShowKey(event.keyCode))
+    if (ShowKey(event.keyCode)){
       event.preventDefault();
+    }
   }
 
   $(window).keyup(function(event) {
     HandleKeyUp(event)
   });
 
-  $("#divKeyboard").keyup(function(event) {
+  $("body").keyup(function(event) {
     HandleKeyUp(event)
   });
 
   function HandleKeyUp(event) {
-    if (HideKey(event.keyCode))
+    if (HideKey(event.keyCode)){
       event.preventDefault();
+    }
   }
 
   $(window).blur(HandleBlur);
