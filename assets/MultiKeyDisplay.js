@@ -1,18 +1,14 @@
 $(function() {
+  let body = document.getElementsByTagName("body")[0];
+  let imgKeyboard = document.getElementById("imgKeyboard");
   let oKeyboard = null;
+  let fUserHasTyped = false;
 
-  function GetKeyboard(strFile) {
-    $.getJSON({
-      url: strFile,
-      mimeType: "application/json",
-      success: json => {
-        oKeyboard = json;
-        RefreshKeyboardView();
-      }
-    });
+  function GetKeyboard(file) {
+    fetch(file)
+      .then(data => data.json())
+      .then(json => { oKeyboard = json; });
   }
-
-  function RefreshKeyboardView() {}
 
   function GetKey(keyCode) {
     let oLayout = oKeyboard.Layout;
@@ -32,17 +28,18 @@ $(function() {
   function ShowKey(keyCode) {
     let fResult = false;
     HideHintUserToType();
-    if (GetKeyOverlay(keyCode).length == 0) {
+    if (GetKeyOverlay(keyCode) === null) {
       let rgKey = GetKey(keyCode);
-      let jqueryImage = $("#imgKeyboard");
-      let pxDefaultKeyWidth = Number(jqueryImage.innerWidth()) / oKeyboard.Width;
-      let pxDefaultKeyHeight = Number(jqueryImage.innerHeight()) / oKeyboard.Height;
-      if (rgKey != null) {
-        if (rgKey[1].length != null) {
-          for (let iKeyLocation = 0; iKeyLocation < rgKey[1].length; ++iKeyLocation)
+      let pxDefaultKeyWidth = Number(imgKeyboard.naturalWidth) / oKeyboard.Width;
+      let pxDefaultKeyHeight = Number(imgKeyboard.naturalHeight) / oKeyboard.Height;
+      if(rgKey != null) {
+        if(rgKey[1].length != null) {
+          for(let iKeyLocation = 0; iKeyLocation < rgKey[1].length; ++iKeyLocation){
             AppendOverlayAtLocation(keyCode, pxDefaultKeyWidth, pxDefaultKeyHeight, rgKey[1][iKeyLocation][0], rgKey[1][iKeyLocation][1], rgKey[1][iKeyLocation][2], rgKey[1][iKeyLocation][3]);
-        } else
+          }
+        }else{
           AppendOverlayAtLocation(keyCode, pxDefaultKeyWidth, pxDefaultKeyHeight, rgKey[1], rgKey[2], rgKey[3], rgKey[4]);
+        }
         fResult = true;
       }
     }
@@ -70,8 +67,9 @@ $(function() {
     if (rgKey != null) {
       GetKeyOverlay(keyCode).remove();
       if (rgKey[1].length != null) {
-        for (let iKeyLocations = 1; iKeyLocations < rgKey[1].length; ++iKeyLocations)
+        for (let iKeyLocations = 1; iKeyLocations < rgKey[1].length; ++iKeyLocations){
           GetKeyOverlay(keyCode).remove();
+        }
       }
       fResult = true;
     }
@@ -79,12 +77,8 @@ $(function() {
   }
 
   function GetKeyOverlay(keyCode) {
-    return $("#overlay" + keyCode);
+    return document.getElementById(`overlay${keyCode}`);
   }
-
-  $("body").keydown(function(event) {
-    HandleKeyDown(event)
-  });
 
   function HandleKeyDown(event) {
     if (!fUserHasTyped) {
@@ -96,34 +90,25 @@ $(function() {
     }
   }
 
-  $(window).keyup(function(event) {
-    HandleKeyUp(event)
-  });
-
-  $("body").keyup(function(event) {
-    HandleKeyUp(event)
-  });
-
   function HandleKeyUp(event) {
     if (HideKey(event.keyCode)){
       event.preventDefault();
     }
   }
 
-  $(window).blur(HandleBlur);
+  body.onkeydown = (event) => HandleKeyDown(event);
+  body.onkeyup = (event) => HandleKeyUp(event);
+  window.onfocus = () => HandleFocus();
+  window.onblur = () => HandleBlur();
 
-  function HandleBlur() {
-    $("#divKeyboard img[id^=overlay]").remove();
-    ShowHintUserToType();
-  }
-  window.onfocus = function() {
-    HandleFocus();
-  };
-
-  function HandleFocus(event) {
+  function HandleFocus() {
     HideHintUserToType();
   }
-  let fUserHasTyped = false;
+
+  function HandleBlur() {
+    document.querySelectorAll("#divKeyboard img[id^=overlay]").forEach(e => e.remove());
+    ShowHintUserToType();
+  }
 
   function ShowHintUserToType() {
     if (!fUserHasTyped) {
@@ -137,13 +122,12 @@ $(function() {
 
   function ShowMessage(idMessage, strMessage) {
     if ($("#" + idMessage).length == 0) {
-      let jqueryImage = $("#imgKeyboard");
       let messageWidth = 200;
       let messageHeight = 40;
       $(".MultiKeyDisplayMessage").each(function(i) {
         HideMessage(this.id)
       });
-      $("<span id='" + idMessage + "' " + "class='MultiKeyDisplayMessage' " + "style='position:absolute; left:0px; top:0px; " + "width:" + jqueryImage.innerWidth() + "px; " + "height:" + jqueryImage.innerHeight() + "px; " + "background: grey; " + "filter:alpha(opacity=80); opacity:0.8;' >" + "<span " + "style='position:absolute; left:" + ((jqueryImage.innerWidth() - messageWidth) / 2) + "px; " + "top:" + ((jqueryImage.innerHeight() - messageHeight) / 2) + "px; " + "width:" + messageWidth + "px; " + "height:" + messageHeight + "px; " + "text-align:center; " + "font-size:24pt; " + "background: lightgrey;' >" + strMessage + "</span></span>").click(function() {
+      $("<span id='" + idMessage + "' " + "class='MultiKeyDisplayMessage' " + "style='position:absolute; left:0px; top:0px; " + "width:" + imgKeyboard.naturalWidth + "px; " + "height:" + imgKeyboard.naturalHeight + "px; " + "background: grey; " + "filter:alpha(opacity=80); opacity:0.8;' >" + "<span " + "style='position:absolute; left:" + ((imgKeyboard.naturalWidth - messageWidth) / 2) + "px; " + "top:" + ((imgKeyboard.naturalHeight - messageHeight) / 2) + "px; " + "width:" + messageWidth + "px; " + "height:" + messageHeight + "px; " + "text-align:center; " + "font-size:24pt; " + "background: lightgrey;' >" + strMessage + "</span></span>").click(function() {
         window.focus();
       }).appendTo($("#divKeyboard"));
     }
@@ -156,24 +140,14 @@ $(function() {
     });
   }
 
-  $(".hoverButton").hover(function() {
-    $(this).css("background-position", "0 -24px");
-    $(window).unbind('blur');
-  }, function() {
-    $(this).css("background-position", "0 0");
-    $(window).blur(HandleBlur);
-  });
-
-  $("#imgKeyboard").load(function() {
-    $("#embedRegion").css("left", $("#imgKeyboard").width() - $("#embedRegion").width() + 1);
-    ShowHintUserToType();
-  });
-
-  if ($("#imgKeyboard").attr("keyboardname") == "FullSizeDefault") {
-    $("#imgKeyboard").attr("src", "assets/KeyboardFullSizeDefault.gif");
+  if (imgKeyboard.getAttribute("keyboardname") == "FullSizeDefault") {
+    imgKeyboard.src = "assets/KeyboardFullSizeDefault.gif";
     GetKeyboard("assets/defaultFullSizeKeyMap.js");
   } else {
-    $("#imgKeyboard").attr("src", "assets/KeyboardDefault.gif");
+    imgKeyboard.src = "assets/KeyboardDefault.gif";
     GetKeyboard("assets/defaultKeyMap.js");
   }
+
+  imgKeyboard.onload = () => { ShowHintUserToType(); };
+
 });

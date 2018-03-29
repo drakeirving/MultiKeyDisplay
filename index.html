@@ -3,21 +3,24 @@
 <head>
   <title>Keyboard Ghosting Demonstration</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <!-- <script type="text/javascript" src="assets/jquery-1.js"></script> -->
 	<script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
   <script type="text/javascript" src="assets/MultiKeyDisplay.js"></script>
+  <style>
+    #wrapper{
+      width: 828px;
+      padding: 36px;
+      margin: 0 auto;
+    }
+    #divKeyboard{
+      position: relative;
+    }
+  </style>
 </head>
 <body>
-	<div id="divKeyboard">
-		<style>
-			#divKeyboard{
-				position: relative;
-				margin: 0 auto;
-				width: 960px;
-			}
-		</style>
-  	<img id="imgKeyboard" alt="Keyboard" keyboardname="FullSizeDefault" src="assets/KeyboardFullSizeDefault.gif">
-	</div>
-
+  <div id="wrapper">
+  	<div id="divKeyboard">
+    	<img id="imgKeyboard" alt="Keyboard" keyboardname="FullSizeDefault" src="assets/KeyboardFullSizeDefault.gif">
+  	</div>
+  </div>
 </body>
 </html>
